@@ -8,9 +8,6 @@ from preprocess import draw_base64
 import base64
 import random
 
-# ios posts front end every 0.1 seconds
-# web gets image every 0.1 seconds, keeping a counter
-# when the counter reaches 6, web sends request for authenticate and resets the counter it has
 image = ""
 images = []
 
