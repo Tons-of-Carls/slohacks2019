@@ -57,12 +57,12 @@ class DataHelper:
         cv2.addWeighted(img, alpha, output, 1 - alpha,0, output)
         cv2.imwrite(out_file,output)
 
-    def find_files(self, file_part):
+    def find_files(self, directory):
         files = []
-        current = os.getcwd()
+        current = os.join(os.getcwd(), directory)
 
         for i in os.listdir(current):
-            if os.path.isfile(os.path.join(current,i)) and file_part in i:
+            if os.path.isfile(os.path.join(current,i)):
                 files.append(i)
         return files
 

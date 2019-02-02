@@ -43,6 +43,4 @@ def authenticate():
 
     return "argmax of images"
 
-
-
 run(host='localhost', port=8000)

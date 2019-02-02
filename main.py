@@ -1,12 +1,17 @@
 import tensorflow as tf
 import numpy as np
-#import input_data
-#import cv2
 from matplotlib import pyplot as plt
-#from matplotlib import pyplot as plt
 import sys
-#from bottle import route, run, template, static_file, get, post, request
 import urllib
+from bottle import route, run, template, static_file, get, post, request
+from preprocess import draw_base64
+import base64
+
+# ios posts front end every 0.1 seconds
+# web gets image every 0.1 seconds, keeping a counter
+# when the counter reaches 6, web sends request for authenticate and resets the counter it has
+image = ""
+images = []
 
 
 def initWeight(shape):
@@ -78,8 +83,8 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 sess.run(tf.initialize_all_variables())
 
 si = 3
-sl = ["f","k","l","m"]
-sn = ["Kevin_Fang","Kevin_Frans","Lilia_Tang","Michael_Huang"]
+sl = ["c", "j", "k"]
+sn = ["Carleton","Juyeong","Kevin"]
 
 batch = np.zeros((si*6,12288))
 labels = np.zeros((si*6,si))
@@ -93,8 +98,7 @@ if sys.argv[1] == "train":
             labels[ti] = np.zeros([si])
             labels[ti][siii] = 1
 
-            loc = "IMG_1502.jpg" #sl[siii]+""+str(sxxx+1)+".jpg"
-            print(loc)
+            loc = "IMG_1502.jpg"
             batch[ti] = plt.imread(loc).flatten()
             ti += 1
     batch = batch/225.0
@@ -120,69 +124,45 @@ else:
     print(y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0}))
 
 
-# @route('/')
-# def index():
-#     return "same"
-#
-# login = ""
-#
-# @post('/login') # or @route('/login', method='POST')
-# def do_login():
-#     global login
-#
-#     saver.restore(sess, tf.train.latest_checkpoint("/Users/kevin/Documents/Python/facial-detection/"))
-#     image = urllib.request.urlopen('https://signatureauthentication.firebaseio.com/image.json').read()
-#     image = image[1:-1]
-#     image = image.replace("\\r\\n", "")
-#
-#     fh = open("imageToSave.png", "wb")
-#     fh.write(image.decode('base64'))
-#     fh.close()
-#
-#     img = cv2.imread("imageToSave.png")
-#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-#     scaled = cv2.resize(gray,(32,32))
-#     cv2.imwrite("imageToSaveSmall.jpg",scaled)
-#
-#     batch = np.zeros((1,1024))
-#     batch[0] = misc.imread("imageToSaveSmall.jpg").flatten()
-#     pr = y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0})
-#     login = sn[np.argmax(pr)]
-#     print("login is " + login)
-#     print(sn[np.argmax(pr)])
-#     return sn[np.argmax(pr)]
-#
-#
-#
-# @post('/loggedin')
-# def loggedin():
-#     global login
-#     print(request.forms.get('username') + " is trying to login, it is: " + login + "asd")
-#     if(login == request.forms.get('username')):
-#         print("got in")
-#         login = ""
-#         return "true"
-#     elif(login == ""):
-#         login = ""
-#         return "false"
-#     else:
-#         tmp = login
-#         login = ""
-#         return tmp
-#
-#
-# @get('/reset')
-# def reseto():
-#     global login
-#     print "reset"
-#     login = ""
+def save_base64(base64_string, out_file):
+    fh = open(out_file, "wb")
+    fh.write(base64_string.decode('base64'))
+    fh.close()
+
+@route('/')
+def index():
+    return "same"
+
+@post('/post_video')
+def post_video():
+    global image
+    global images
+    base64_string = request.params['image']
+    image = base64_string
+
+    image_file = "image%d.png"%count
+    images.append(image_file)
+    save_base64(image_file, base64_string)
+    return "same"
+
+@get('/get_video')
+def get_video():
+    global image
+    return image
+
+@post('/authenticate')
+def authenticate():
+    global images
+
+    flattened_images = [misc.imread(x).flatten() for x in images]
+
+    saver.restore(sess, tf.train.latest_checkpoint("models/"))
+    batch = flattened_images
+    pr = y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0})
+    print(pr)
+
+    return "argmax of images"
 
 
 
-#run(host='localhost', port=8000)
-
-
-  # print i
-
-# print("test accuracy %g"%accuracy.eval(feed_dict={
-#     x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+run(host='localhost', port=8000)
