@@ -31,36 +31,20 @@
     return [AVCaptureVideoPreviewLayer class];
 }
 
-- (AVCaptureDevice *)frontCamera {
-    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-    for (AVCaptureDevice *device in devices) {
-        if ([device position] == AVCaptureDevicePositionFront) {
-            return device;
-        }
-    }
-    return nil;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
     session.sessionPreset = AVCaptureSessionPresetHigh;
-    AVCaptureDevice *device = [self frontCamera];
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     NSError *error = nil;
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
     [session addInput:input];
     AVCaptureVideoPreviewLayer *newCaptureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:session];
     newCaptureVideoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     newCaptureVideoPreviewLayer.frame = CGRectMake(0, 0, dWidth, dHeight);
-    //    newCaptureVideoPreviewLayer.la
     [self.view.layer addSublayer:newCaptureVideoPreviewLayer];
     [session startRunning];
-    
-    //    capturedView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, dWidth, dHeight)];
-    //    //    capturedView.image = image;
-    //    [self.view addSubview:capturedView];
-    
     
     stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
     NSDictionary *outputSettings = [[NSDictionary alloc] initWithObjectsAndKeys: AVVideoCodecJPEG, AVVideoCodecKey, nil];
@@ -68,18 +52,9 @@
     [session addOutput:stillImageOutput];
     
     
-    [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(tick:) userInfo:nil repeats:YES];
+    [NSTimer scheduledTimerWithTimeInterval:0.4f target:self selector:@selector(tick:) userInfo:nil repeats:YES];
     
     count = 3;
-    
-    label = [[UILabel alloc] initWithFrame:CGRectMake(0, 500, dWidth, 100)];
-    label.text = @"3";
-    label.textAlignment = NSTextAlignmentCenter;
-    label.font = [UIFont boldSystemFontOfSize:60];
-    [self.view addSubview:label];
-    
-    
-    
     
     // Do any additional setup after loading the view, typically from a nib.
 }
@@ -98,18 +73,6 @@
 
 -(void) capture
 {
-    
-    UIView* v = [[UIView alloc] initWithFrame: CGRectMake(0, 0, dWidth, dHeight)];
-    [self.view addSubview: v];
-    v.backgroundColor = [UIColor whiteColor];
-    [UIView animateWithDuration:0.2 delay:0.0 options:
-     UIViewAnimationOptionCurveEaseIn animations:^{
-         v.backgroundColor = [UIColor clearColor];
-     } completion:^ (BOOL completed) {
-         [v removeFromSuperview];
-     }];
-    
-    
     [[NSUserDefaults standardUserDefaults] setInteger:[[NSUserDefaults standardUserDefaults] integerForKey:@"snap"]+1 forKey:@"snap"];
     
     AVCaptureConnection *videoConnection = nil;
@@ -145,8 +108,9 @@
          
          NSData *imageData2 = UIImageJPEGRepresentation(image, 0.0);
          NSString *encodedString = [imageData2 base64Encoding];
+         NSURL *url = [[NSURL alloc] initWithString:@"the ngrok url"];
          
-         NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"the ngrok url"]];
+         NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:url];
          
          NSString *imageData3 =[NSString stringWithFormat:@"image=%@",encodedString];
          
@@ -173,26 +137,6 @@
          }];
          [dataTask resume];
          
-     }];
-}
-
-
--(void) sendRequest:(NSURLRequest*) request
-{
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *response, NSData *data, NSError *error)
-     {
-         if (error)
-         {
-             NSLog(@"Error,%@", [error localizedDescription]);
-         }
-         else
-         {
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 //                 bg.backgroundColor = [UIColor blueColor];
-                 NSLog(@"%@", [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding]);
-             });
-         }
      }];
 }
 
