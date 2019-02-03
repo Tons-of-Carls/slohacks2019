@@ -1,21 +1,42 @@
-import React from "react";
+import React, { Component } from "react";
+import { Spring } from "react-spring";
 
-export default function Component3() {
-  return (
-    <div style={c3Style}>
-      <h1>Component 3</h1>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis
-        distinctio quidem, aspernatur ducimus dolor mollitia impedit in aliquid
-        perferendis vero, odio eveniet natus alias molestiae laudantium culpa
-        consequuntur, at soluta?
-      </p>
-    </div>
-  );
+export class Component3 extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isCorrect: false
+    };
+  }
+
+  render() {
+    var putAnswer;
+    if (this.state.isCorrect) {
+      putAnswer = correct;
+    } else {
+      putAnswer = incorrect;
+    }
+
+    return (
+      <div style={correct}>
+        <h1>Correct</h1>
+      </div>
+    );
+  }
 }
 
-const c3Style = {
-  background: "skyblue",
+const correct = {
+  background: "darkseagreen",
   color: "white",
-  padding: "1.5rem 1.5rem 5rem 1.5rem"
+  padding: "1.5rem 1.5rem 5rem 1.5rem",
+  textAlign: "center"
 };
+
+const incorrect = {
+  background: "crimson",
+  color: "white",
+  padding: "1.5rem 1.5rem 5rem 1.5rem",
+  textAlign: "center"
+};
+
+export default Component3;

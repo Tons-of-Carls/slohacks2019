@@ -10,7 +10,8 @@ export default function Component1() {
       {props => (
         <div style={props}>
           <div style={c1Style}>
-            <h1>Component 1</h1>
+            <h1>Who is this?</h1>
+            <p>insert image/video</p>
           </div>
         </div>
       )}
