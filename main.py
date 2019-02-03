@@ -7,9 +7,13 @@ from bottle import route, run, template, static_file, get, post, request
 from preprocess import draw_base64
 import base64
 import random
+import os
+import json
+from io import TextIOWrapper
 
 image = ""
 images = []
+count = 0
 
 
 def initWeight(shape):
@@ -138,10 +142,12 @@ else:
     print(y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0}))
 
 
-def save_base64(base64_string, out_file):
+def save_base64(image, out_file):
     fh = open(out_file, "wb")
-    fh.write(base64_string.decode('base64'))
+    fh.write(image.decode('base64'))
     fh.close()
+    # with open(out_file, "wb") as fh:
+        # fh.write(base64_string.decode('base64'))
 
 @route('/')
 def index():
@@ -151,12 +157,20 @@ def index():
 def post_video():
     global image
     global images
-    base64_string = request.params['image']
-    image = base64_string
+    global count
+    image = json.load(TextIOWrapper(request.body))['image']
+    image = image.replace("\\r\\n", "")
 
-    image_file = "image%d.png"%count
+    image_file = "saved/image%d.jpg"%count
     images.append(image_file)
-    save_base64(image_file, base64_string)
+    if(len(images) > 6):
+        images = images[-6:]
+
+    with open(image_file, "wb+") as fh:
+        fh.write(base64.decodebytes(image.encode()))
+    count += 1
+    if(count == 6):
+        count = 0
     return "same"
 
 @get('/get_video')

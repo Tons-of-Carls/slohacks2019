@@ -108,21 +108,20 @@
          
          NSData *imageData2 = UIImageJPEGRepresentation(image, 0.0);
          NSString *encodedString = [imageData2 base64Encoding];
-         NSURL *url = [[NSURL alloc] initWithString:@"the ngrok url"];
+      
+         NSDictionary *parameters = @{@"image":encodedString};
          
+         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:parameters
+                                                            options:nil
+                                                              error:&error];
+         
+         NSLog(@"image=%@", encodedString);
+         NSURL *url = [[NSURL alloc] initWithString:@"https://9d4d9958.ngrok.io/post_video"];
          NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:url];
-         
-         NSString *imageData3 =[NSString stringWithFormat:@"image=%@",encodedString];
-         
-         //create the Method "GET" or "POST"
+
          [urlRequest setHTTPMethod:@"POST"];
-         
-         //Convert the String to Data
-         NSData *data1 = [imageData3 dataUsingEncoding:NSUTF8StringEncoding];
-         
-         //Apply the data to the body
-         [urlRequest setHTTPBody:data1];
-         
+         [urlRequest setHTTPBody:jsonData];
+
          NSURLSession *session = [NSURLSession sharedSession];
          NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:urlRequest completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
              NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
