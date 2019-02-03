@@ -6,10 +6,8 @@ import urllib
 from bottle import route, run, template, static_file, get, post, request
 from preprocess import draw_base64
 import base64
+import random
 
-# ios posts front end every 0.1 seconds
-# web gets image every 0.1 seconds, keeping a counter
-# when the counter reaches 6, web sends request for authenticate and resets the counter it has
 image = ""
 images = []
 
@@ -72,7 +70,7 @@ y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 y_conv_reshape = tf.reshape(y_conv, [-1, 3])
 
 cross_entropy = -tf.reduce_sum(y_*tf.log(y_conv  + 1e-9))
-train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(1e-8).minimize(cross_entropy)
 
 var1 = tf.argmax(y_conv_reshape,1)
 var2 = tf.argmax(y_,1)
@@ -86,39 +84,55 @@ si = 3
 sl = ["c", "j", "k"]
 sn = ["Carleton","Juyeong","Kevin"]
 
-batch = np.zeros((si*6,12288))
-labels = np.zeros((si*6,si))
+batch_size = 6
+batches = 6
 
+batch = np.zeros((batches, batch_size, 12288))
+labels = np.zeros((batches, batch_size,si))
 saver = tf.train.Saver()
 
+
 if sys.argv[1] == "train":
-    ti = 0
-    for siii in range(si):
-        for sxxx in range(6):
-            labels[ti] = np.zeros([si])
-            labels[ti][siii] = 1
+    ###MAKE IT INTO ONE BIG LINE
+    images_list = []
+    labels_list = []
+    for id in range(3):
+        same = sl[id]
+        for image_index in range(0,12):
+            loc = "data/%s%d.jpg"%(same,image_index)
+            images_list.append(plt.imread(loc).flatten())
 
-            loc = "IMG_1502.jpg"
-            batch[ti] = plt.imread(loc).flatten()
-            ti += 1
-    batch = batch/225.0
+            l = np.zeros(3)
+            l[id] = 1
+            labels_list.append(l)
 
+    c = list(zip(images_list, labels_list))
+    random.shuffle(c)
+    images_list, labels_list = zip(*c)
+
+
+    for i in range(6):
+        batch[i] = images_list[i:len(images_list):6]
+        labels[i] = labels_list[i:len(labels_list):6]
+
+    batch = batch/255
     for i in range(20000):
-        if i%10 == 0:
-            print("hi")
-            train_accuracy = accuracy.eval(feed_dict={x:batch, y_: labels, keep_prob: 1.0})
-            print("step %d, training accuracy %g"%(i, train_accuracy))
-            # result = y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0})
-            # for k in range(18):
-            #     print "lmao %d %s" % (k, np.array_str(result[k]))
-        if i%50 == 0:
+        for j in range(batches):
+            if j%1 == 0:
+                v1 = y_conv_reshape.eval(feed_dict={x:batch[j], y_: labels[j], keep_prob: 1.0})
+                # v2 = var1.eval(feed_dict={x:batch[j], y_: labels[j], keep_prob: 1.0})
+                v3 = h_fc1.eval(feed_dict={x:batch[j], y_: labels[j], keep_prob: 1.0})
+                print (v1, v3, batch[j], labels[j])
+                train_accuracy = accuracy.eval(feed_dict={x:batch[j], y_: labels[j], keep_prob: 1.0})
+                print("step %d, batch %d, training accuracy %.10f"%(i, j, train_accuracy))
+            train_step.run(feed_dict={x:batch[j], y_: labels[j], keep_prob: 0.5})
+        if i%5 == 0 and i != 0:
             saver.save(sess, "models/training.ckpt", global_step=i)
 
-        train_step.run(feed_dict={x: batch, y_: labels, keep_prob: 0.5})
 elif sys.argv[1] == "server":
     print("server")
 else:
-    saver.restore(sess, tf.train.latest_checkpoint("/Users/kevin/Documents/Python/facial-detection/"))
+    saver.restore(sess, tf.train.latest_checkpoint("/Users/kevin/Desktop/slohacks2019/models/"))
     batch = np.zeros((1,1024))
     batch[0] = plt.imread(sys.argv[1]).flatten()
     print(y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0}))
@@ -155,13 +169,11 @@ def authenticate():
     global images
 
     flattened_images = [misc.imread(x).flatten() for x in images]
-
     saver.restore(sess, tf.train.latest_checkpoint("models/"))
     batch = flattened_images
     pr = y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0})
-    print(pr)
 
-    return "argmax of images"
+    return max(pr)
 
 
 

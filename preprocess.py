@@ -28,7 +28,7 @@ class DataHelper:
 
         image = types.Image(content=content)
 
-        crop_hints_params = types.CropHintsParams(aspect_ratios=[0.5])
+        crop_hints_params = types.CropHintsParams(aspect_ratios=[0.3])
         image_context = types.ImageContext(crop_hints_params=crop_hints_params)
 
         response = client.crop_hints(image=image, image_context=image_context)
@@ -54,16 +54,18 @@ class DataHelper:
             -1
         )
         alpha = 0.4
-        cv2.addWeighted(img, alpha, output, 1 - alpha,0, output)
-        cv2.imwrite(out_file,output)
+        cv2.addWeighted(img, alpha, output, 1 - alpha, 0, output)
+        output = cv2.resize(output, (64,64))
+        cv2.imwrite(os.path.join('data',out_file), output)
 
-    def find_files(self, directory):
+    def find_files(self, key):
         files = []
-        current = os.join(os.getcwd(), directory)
+        current = os.path.join(os.getcwd(),'images')
 
         for i in os.listdir(current):
-            if os.path.isfile(os.path.join(current,i)):
-                files.append(i)
+            real_file = i.split('.')[0]
+            if key in real_file:
+                files.append(os.path.join('images',i))
         return files
 
 def get_color(image, vectors):
@@ -78,10 +80,8 @@ def get_color(image, vectors):
 
 def draw_base64(image_file, out_file):
     vects = get_crop_hint(image_file)
-
     img = cv2.imread(image_file)
     output = cv2.imread(image_file)
-
     color = get_color(img, vects)
 
     cv2.rectangle(
