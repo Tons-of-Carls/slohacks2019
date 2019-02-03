@@ -5,11 +5,6 @@ export class Component2 extends Component {
   handleClick1() {}
 
   render() {
-    //variable will change its value when corresponding button is pressed
-    var carl = false;
-    var kev = false;
-    var juy = false;
-
     return (
       <Spring
         from={{ opacity: 0, marginTop: -500 }}

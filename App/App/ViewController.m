@@ -116,7 +116,7 @@
                                                               error:&error];
          
          NSLog(@"image=%@", encodedString);
-         NSURL *url = [[NSURL alloc] initWithString:@"https://9d4d9958.ngrok.io/post_video"];
+         NSURL *url = [[NSURL alloc] initWithString:@"https://c59f92fa.ngrok.io/post_video"];
          NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:url];
 
          [urlRequest setHTTPMethod:@"POST"];

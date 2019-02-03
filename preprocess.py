@@ -68,8 +68,8 @@ class DataHelper:
                 files.append(os.path.join('images',i))
         return files
 
-def get_color(image, vectors):
-    width = img.shape[1]
+def get_color(image, vects):
+    width = image.shape[1]
     if(vects[0].x < 0.33 * width):
         color = (255,0,0,0.5)
     elif(0.33*width <= vects[0].x < 0.67 * width):
@@ -78,8 +78,8 @@ def get_color(image, vectors):
         color = (0,0,255,0.5)
     return color
 
-def draw_base64(image_file, out_file):
-    vects = get_crop_hint(image_file)
+def process_image(image_file,dataHelper):
+    vects = dataHelper.get_crop_hint(image_file)
     img = cv2.imread(image_file)
     output = cv2.imread(image_file)
     color = get_color(img, vects)
@@ -94,9 +94,8 @@ def draw_base64(image_file, out_file):
 
     alpha = 0.4
     cv2.addWeighted(img, alpha, output, 1 - alpha,0, output)
-    retval, buffer = cv2.imencode('.jpg', output)
-    base64image = base64.b64encode(buffer)
-    return base64image
+    output = cv2.resize(output, (64,64))
+    return output
 
 
 if __name__ == '__main__':

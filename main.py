@@ -4,17 +4,19 @@ from matplotlib import pyplot as plt
 import sys
 import urllib
 from bottle import route, run, template, static_file, get, post, request
-from preprocess import draw_base64
+from preprocess import process_image, DataHelper
 import base64
 import random
 import os
 import json
-from io import TextIOWrapper
+from io import TextIOWrapper, BytesIO
+from PIL import Image
+from scipy import misc
 
 image = ""
 images = []
 count = 0
-
+same = DataHelper()
 
 def initWeight(shape):
     weights = tf.truncated_normal(shape,stddev=0.1)
@@ -167,7 +169,16 @@ def post_video():
         images = images[-6:]
 
     with open(image_file, "wb+") as fh:
-        fh.write(base64.decodebytes(image.encode()))
+        real_image = base64.decodebytes(image.encode())
+        fh.write(real_image)
+
+    im = Image.open(image_file)
+    image = im.rotate(-90)
+
+    buffered = BytesIO()
+    image.save(buffered, format="JPEG")
+    image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
     count += 1
     if(count == 6):
         count = 0
@@ -176,18 +187,27 @@ def post_video():
 @get('/get_video')
 def get_video():
     global image
-    return image
+    dictionary = {'image':image}
+    same = json.loads(json.dumps(dictionary))
+    return same
 
-@post('/authenticate')
+@get('/authenticate')
 def authenticate():
     global images
+    global same
+    batch = [process_image(x, same).flatten() for x in images]
 
-    flattened_images = [misc.imread(x).flatten() for x in images]
-    saver.restore(sess, tf.train.latest_checkpoint("models/"))
-    batch = flattened_images
-    pr = y_conv.eval(feed_dict={x: batch, y_: labels, keep_prob: 1.0})
+    batch = np.squeeze(np.array([batch]))
+    print (batch.shape)
+    print (labels.shape)
+    batch = batch/255
 
-    return max(pr)
+    saver.restore(sess, tf.train.latest_checkpoint("/Users/kevin/Desktop/slohacks2019/models/"))
+
+    pr = y_conv.eval(feed_dict={x: batch,  y_: labels[0], keep_prob: 1.0})
+    print (pr, max(pr))
+    # thing = json.loads(json.dumps({'same':max(pr)}))
+    return "hii"
 
 
 

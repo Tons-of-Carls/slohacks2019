@@ -2,4 +2,6 @@ models/
 images/
 data/
 .env/
-
+saved/
+interphase_slohacks/node_modules/
+checkpoints/
