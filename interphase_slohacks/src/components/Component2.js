@@ -2,24 +2,13 @@ import React, { Component } from "react";
 import { Spring } from "react-spring";
 
 export class Component2 extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isHovering: false
-    };
-  }
-
-  toggleHover() {
-    this.setState({ isHovering: !this.state.isHovering });
-  }
+  handleClick1() {}
 
   render() {
-    var divStyle;
-    if (this.state.isHovering) {
-      divStyle = c2Hover;
-    } else {
-      divStyle = c2Style;
-    }
+    //variable will change its value when corresponding button is pressed
+    var carl = false;
+    var kev = false;
+    var juy = false;
 
     return (
       <Spring
@@ -29,13 +18,19 @@ export class Component2 extends Component {
       >
         {props => (
           <div style={props}>
-            <div
-              style={divStyle}
-              onMouseEnter={this.toggleHover}
-              onMouseLeave={this.toggleHover}
-              onClick={this.props.toggle}
-            >
-              <h1 style={identify}>Identify</h1>
+            <div style={c2Style}>
+              <button style={btn1} onClick={this.props.toggle}>
+                {" "}
+                Carleton{" "}
+              </button>
+              <button style={btn2} onClick={this.props.toggle}>
+                {" "}
+                Kevin{" "}
+              </button>
+              <button style={btn3} onClick={this.props.toggle}>
+                {" "}
+                Juyeong{" "}
+              </button>
             </div>
           </div>
         )}
@@ -47,10 +42,12 @@ export class Component2 extends Component {
 const c2Style = {
   background: "slateblue",
   color: "white",
-  padding: "1.5rem"
+  padding: "1.5rem",
+  boxShadow: "0px 8px 1px #9E9E9E",
+  textAlign: "center"
 };
 
-const btn = {
+const btn1 = {
   background: "#333",
   color: "#fff",
   padding: "1rem 2rem",
@@ -59,14 +56,29 @@ const btn = {
   margin: "15px 0"
 };
 
-const c2Hover = {
-  background: "mediumslateblue",
-  color: "white",
-  padding: "1.5rem"
+const btn2 = {
+  background: "#333",
+  color: "#fff",
+  padding: "1rem 2rem",
+  border: "none",
+  textTransform: "uppercase",
+  margin: "15px 0",
+  marginLeft: "20%",
+  marginRight: "20%"
+};
+
+const btn3 = {
+  background: "#333",
+  color: "#fff",
+  padding: "1rem 2rem",
+  border: "none",
+  textTransform: "uppercase",
+  margin: "15px 0"
 };
 
 const identify = {
-  textAlign: "center"
+  textAlign: "left",
+  textAlignVertical: "center"
 };
 
 export default Component2;

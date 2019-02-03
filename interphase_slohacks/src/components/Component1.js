@@ -24,5 +24,6 @@ const c1Style = {
   color: "white",
   padding: "1.5rem",
   height: "400px",
-  textAlign: "center"
+  textAlign: "center",
+  boxShadow: "0px 8px 1px #9E9E9E"
 };
